@@ -51,3 +51,12 @@ Thumbs.db
 # Server-side inference assets
 artifacts/api-server/models/*.pt
 artifacts/api-server/models/*.onnx
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]

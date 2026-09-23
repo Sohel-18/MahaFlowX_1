@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -22,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from ultralytics import YOLO
 
+load_dotenv()
 
 ROOT = Path(__file__).resolve().parent
 MODEL_PATH = Path(os.getenv("YOLO_MODEL_PATH", str(ROOT / "models" / "best.pt")))
@@ -99,9 +101,9 @@ async def authenticated_user_id(access_token: str | None) -> str:
     return str(user_id)
 
 
-async def supabase_query(path: str, access_token: str, params: dict[str, str]) -> list[dict[str, Any]]:
+async def supabase_query(path: str, access_token: str | None, params: dict[str, str]) -> list[dict[str, Any]]:
     async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.get(f"{SUPABASE_URL.rstrip('/')}/rest/v1/{path}", headers=request_headers(access_token), params=params)
+        response = await client.get(f"{SUPABASE_URL.rstrip('/')}/rest/v1/{path}", headers=request_headers(None), params=params)
     if response.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"Supabase crowd_data query failed: {response.text[:300]}")
     return response.json()
@@ -181,7 +183,14 @@ async def analyze_cctv(payload: CctvRequest, authorization: str | None = Header(
     historical_rows = await supabase_query(
         "crowd_data",
         access_token,
-        {"select": "head_count", "camera_id": f"eq.{payload.camera_id}", "owner_user_id": f"eq.{owner_user_id}", "captured_at": f"gte.{cutoff}", "order": "captured_at.desc", "limit": "10000"},
+        {
+            "select": "head_count",
+            "camera_id": f"eq.{payload.camera_id}",
+            "owner_user_id": f"eq.{owner_user_id}",
+            "captured_at": f"gte.{cutoff}",
+            "order": "captured_at.desc",
+            "limit": "10000",
+        },
     )
     historical_counts = [float(row["head_count"]) for row in historical_rows if row.get("head_count") is not None]
     historical_average = round(sum(historical_counts) / len(historical_counts), 2) if historical_counts else None
