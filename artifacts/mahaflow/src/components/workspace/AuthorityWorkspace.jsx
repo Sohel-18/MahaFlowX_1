@@ -84,12 +84,7 @@ const CctvManager = ({ session, profile }) => {
   const [analysisBusyId, setAnalysisBusyId] = useState("");
   const [analysisResults, setAnalysisResults] = useState({});
   const [analysisErrors, setAnalysisErrors] = useState({});
-  const [workerEndpoint, setWorkerEndpoint] = useState(cctvBackendUrl);
-  useEffect(() => {
-    getUserSettings(session.user.id).then(settings => {
-      if (settings?.yolo_worker_url) setWorkerEndpoint(settings.yolo_worker_url);
-    }).catch(() => {});
-  }, [session.user.id]);
+  const workerEndpoint = cctvBackendUrl;
   const set = (key, value) => setForm(current => ({ ...current, [key]: value }));
   const reset = () => { setForm(emptyCamera); setEditingId(""); };
   const save = async event => {
