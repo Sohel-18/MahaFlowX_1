@@ -2,7 +2,7 @@
   "framework": "vite",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run vercel-build",
-  "outputDirectory": "artifacts/mahaflow/dist/public",
+  "outputDirectory": "dist",
   "functions": {
     "api/detect.ts": {
       "maxDuration": 60
