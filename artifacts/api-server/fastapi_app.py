@@ -123,41 +123,62 @@ async def save_observations(observations: list[dict[str, Any]], access_token: st
 def analyze_stream(payload: CctvRequest) -> list[dict[str, Any]]:
     detector = model()
     capture = cv2.VideoCapture(payload.stream_url)
-    if not capture.isOpened():
-        raise HTTPException(status_code=422, detail="The CCTV URL could not be opened. Use a reachable MP4, HLS, or supported live-stream URL.")
 
-    started = datetime.now(timezone.utc)
+    if not capture.isOpened():
+        raise HTTPException(
+            status_code=422,
+            detail="The CCTV URL could not be opened. Use a reachable MP4, HLS, or supported live-stream URL."
+        )
+
     measurements: list[dict[str, Any]] = []
-    next_sample_at = 0.0
-    frame_index = 0
-    fps = capture.get(cv2.CAP_PROP_FPS) or 0.0
-    max_frames = int(payload.max_seconds * fps) if fps > 0 else 0
+
     try:
-        while len(measurements) < 120:
+        fps = capture.get(cv2.CAP_PROP_FPS) or 0.0
+        duration = payload.max_seconds
+
+        if fps <= 0:
+            fps = 25.0
+
+        sample_times = [
+            t for t in range(0, duration, int(payload.sample_interval_seconds))
+        ]
+
+        for timestamp in sample_times:
+            capture.set(cv2.CAP_PROP_POS_MSEC, timestamp * 1000)
+
             ok, frame = capture.read()
+
             if not ok:
-                break
-            frame_index += 1
-            elapsed = frame_index / fps if fps > 0 else (datetime.now(timezone.utc) - started).total_seconds()
-            if elapsed < next_sample_at:
-                if max_frames and frame_index >= max_frames:
-                    break
                 continue
-            results = detector.predict(source=frame, conf=payload.confidence, verbose=False, imgsz=416, device="cpu")
-            count = 0
-            for result in results:
-                if result.boxes is not None:
-                    count += len(result.boxes)
-            measurements.append({"head_count": int(count), "captured_at": utc_now().isoformat()})
-            next_sample_at += payload.sample_interval_seconds
-            if elapsed >= payload.max_seconds:
-                break
-            if max_frames and frame_index >= max_frames:
-                break
+
+            results = detector.predict(
+                source=frame,
+                conf=payload.confidence,
+                imgsz=320,
+                device="cpu",
+                verbose=False
+            )
+
+            count = sum(
+                len(result.boxes)
+                for result in results
+                if result.boxes is not None
+            )
+
+            measurements.append({
+                "head_count": int(count),
+                "captured_at": utc_now().isoformat()
+            })
+
     finally:
         capture.release()
+
     if not measurements:
-        raise HTTPException(status_code=422, detail="The CCTV stream opened but produced no readable frames.")
+        raise HTTPException(
+            status_code=422,
+            detail="The CCTV stream opened but produced no readable frames."
+        )
+
     return measurements
 
 
