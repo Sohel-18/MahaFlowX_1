@@ -105,7 +105,7 @@ const CctvManager = ({ session, profile }) => {
     setAnalysisErrors(current => ({ ...current, [camera.id]: "" }));
     try {
       const baseUrl = workerEndpoint || cctvBackendUrl;
-      const endpoint = baseUrl ? `${baseUrl.replace(/\/$/, "")}/cctv` : "/api/cctv";
+      const endpoint = `${cctvBackendUrl.replace(/\/$/, "")}/cctv`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
