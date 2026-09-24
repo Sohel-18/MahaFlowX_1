@@ -134,7 +134,7 @@ def analyze_stream(payload: CctvRequest) -> list[dict[str, Any]]:
 
     try:
         fps = capture.get(cv2.CAP_PROP_FPS) or 0.0
-        duration = payload.max_seconds
+        duration = min(payload.max_seconds, 10)
 
         if fps <= 0:
             fps = 25.0
