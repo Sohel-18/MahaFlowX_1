@@ -48,7 +48,7 @@ class CctvRequest(BaseModel):
     camera_id: str = Field(default="cctv", max_length=160)
     zone: str = Field(default="Unknown zone", max_length=160)
     max_seconds: int = Field(default=30, ge=5, le=300)
-    sample_interval_seconds: float = Field(default=2.0, ge=0.5, le=15)
+    sample_interval_seconds: float = Field(default=5.0, ge=0.5, le=15)
     confidence: float = Field(default=0.25, gt=0, lt=1)
 
 
@@ -143,7 +143,7 @@ def analyze_stream(payload: CctvRequest) -> list[dict[str, Any]]:
                 if max_frames and frame_index >= max_frames:
                     break
                 continue
-            results = detector.predict(source=frame, conf=payload.confidence, verbose=False, imgsz=320, device="cpu")
+            results = detector.predict(source=frame, conf=payload.confidence, verbose=False, imgsz=416, device="cpu")
             count = 0
             for result in results:
                 if result.boxes is not None:
