@@ -143,7 +143,7 @@ def analyze_stream(payload: CctvRequest) -> list[dict[str, Any]]:
                 if max_frames and frame_index >= max_frames:
                     break
                 continue
-            results = detector.predict(source=frame, conf=payload.confidence, verbose=False)
+            results = detector.predict(source=frame, conf=payload.confidence, verbose=False, imgsz=320, device="cpu")
             count = 0
             for result in results:
                 if result.boxes is not None:
