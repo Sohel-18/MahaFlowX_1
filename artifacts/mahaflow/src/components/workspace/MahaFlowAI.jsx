@@ -203,7 +203,8 @@ export const MahaFlowAI = ({ role, session, profile, setPage }) => {
   };
 
   const askAI = async (nextMessages, purpose = "chat", requestContext = context) => {
-    const response = await fetch(purpose === "crowd_prediction" ? "/api/gemini/chat" : "/api/groq/chat", {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+    const response = await fetch(`${backendUrl}${purpose === "crowd_prediction" ? "/api/gemini/chat" : "/api/groq/chat"}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ messages: nextMessages, context: { ...requestContext, purpose } }),
