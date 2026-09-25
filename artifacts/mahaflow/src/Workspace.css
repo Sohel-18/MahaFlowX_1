@@ -416,19 +416,24 @@
 
 .telemetry-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
   margin: 16px 0 4px;
 }
 
 .telemetry-summary > span {
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 9px 8px;
+  padding: 8px 6px;
   background: #f7f9fc;
   border: 1px solid #edf0f5;
   border-radius: 7px;
+  overflow: hidden;
 }
 
 .telemetry-summary dt {
@@ -436,11 +441,12 @@
   color: #8793a7;
   text-transform: uppercase;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .telemetry-summary dd {
   margin: 0;
-  font: 600 17px Outfit;
+  font: 600 16px Outfit;
   color: var(--ink);
 }
 
@@ -469,6 +475,8 @@
   max-height: 280px;
   overflow-y: auto;
   padding-right: 3px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .telemetry-reading-row {
@@ -508,4 +516,19 @@
 
 .dark .telemetry-readings-toggle {
   border-color: #263656;
+}
+
+.telemetry-grid {
+  align-items: start;
+}
+
+.telemetry-zone-card {
+  align-self: start;
+  min-width: 0;
+  height: fit-content;
+}
+
+.camera-workspace > .data-form {
+  align-self: start;
+  height: fit-content;
 }
