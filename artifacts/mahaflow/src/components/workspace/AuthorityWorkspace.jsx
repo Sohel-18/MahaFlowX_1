@@ -332,15 +332,14 @@ const LiveCrowd = ({ session }) => {
                   </span>
                 </footer>
 
-                <button
-                  type="button"
-                  className="telemetry-readings-toggle"
-                  onClick={() => toggleZone(zone)}
-                  aria-expanded={isExpanded}
-                >
-                  {isExpanded
-                    ? "Hide readings"
-                    : `See all ${zoneReadings.length} readings`}
+                <div className="telemetry-readings-wrapper">
+                  <button
+                    type="button"
+                    className="telemetry-readings-toggle"
+                    onClick={() => toggleZone(zone)}
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? "Hide readings" : `See all ${zoneReadings.length} readings`}
                 </button>
 
                 {isExpanded && (
@@ -377,6 +376,7 @@ const LiveCrowd = ({ session }) => {
                       ))}
                   </div>
                 )}
+                </div>
               </article>
             );
           })}
