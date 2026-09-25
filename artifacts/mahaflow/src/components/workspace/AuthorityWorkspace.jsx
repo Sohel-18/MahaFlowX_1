@@ -167,13 +167,264 @@ const TransportRegistry = ({ session, profile }) => {
 };
 
 const LiveCrowd = ({ session }) => {
-  const readings = useWorkspaceData(() => listCrowdReadings({ ownerId: session.user.id }), [session.user.id]);
-  const observations = useWorkspaceData(() => listCrowdObservations({ ownerId: session.user.id }).catch(() => []), [session.user.id]);
-  const predictions = useWorkspaceData(() => listCrowdPredictions({ ownerId: session.user.id }), [session.user.id]);
-  const displayReadings = readings.data.length ? readings.data : observations.data.map(item => ({ ...item, people_count: item.head_count, recorded_at: item.captured_at, source: item.source || "yolo", model_version: item.model_name }));
+  const readings = useWorkspaceData(
+    () => listCrowdReadings({ ownerId: session.user.id }),
+    [session.user.id]
+  );
+
+  const observations = useWorkspaceData(
+    () => listCrowdObservations({ ownerId: session.user.id }).catch(() => []),
+    [session.user.id]
+  );
+
+  const predictions = useWorkspaceData(
+    () => listCrowdPredictions({ ownerId: session.user.id }),
+    [session.user.id]
+  );
+
+  const [expandedZones, setExpandedZones] = useState({});
+
+  const displayReadings = readings.data.length
+    ? readings.data
+    : observations.data.map(item => ({
+        ...item,
+        people_count: item.head_count,
+        recorded_at: item.captured_at,
+        source: item.source || "yolo",
+        model_version: item.model_name
+      }));
+
   const reloadReadings = readings.reload;
-  useEffect(() => { const channel = supabase.channel(`crowd-${session.user.id}`).on("postgres_changes", { event: "*", schema: "public", table: "mahaflow_crowd_readings", filter: `owner_user_id=eq.${session.user.id}` }, () => reloadReadings()).subscribe(); return () => { void supabase.removeChannel(channel); }; }, [session.user.id, reloadReadings]);
-  return <><SectionHeader eyebrow="AUTHORITY · REALTIME" title="Live monitoring" description="Real detector output and model predictions from your connected YOLO head model." action={<span className="live-dot"><i/> Realtime subscribed</span>}/>{readings.loading || observations.loading ? <LoadingState/> : displayReadings.length ? <div className="telemetry-grid">{displayReadings.map(item => <article className="telemetry-card" key={item.id} data-testid={`authority-reading-${item.id}`}><div><Radio/><StatusBadge value={item.crowd_level}/></div><strong>{item.people_count}</strong><span>people · {item.zone}</span><small>{item.source} {item.model_version ? `· ${item.model_version}` : ""}</small><footer><span>{item.fps ? `${item.fps} FPS` : "FPS awaiting"}</span><span>{item.inference_latency_ms ? `${item.inference_latency_ms} ms` : "Latency awaiting"}</span></footer></article>)}</div> : <EmptyState icon={Cpu} title="Awaiting YOLO readings" message="No counts are simulated. Analyze a registered CCTV URL to publish real observations." testId="authority-readings-empty"/>}<section className="prediction-section"><h3>Predictions</h3>{predictions.data.length ? <div className="prediction-list">{predictions.data.map(item => <article key={item.id} data-testid={`authority-prediction-${item.id}`}><span><b>{item.zone}</b><small>{formatDateTime12(item.prediction_for)} · {item.model_version || "model pending"}</small></span><strong>{item.predicted_count}</strong><StatusBadge value={item.crowd_level}/></article>)}</div> : <EmptyState icon={Activity} title="No predictions received" message="Prediction records will appear when the model service publishes them." testId="authority-predictions-empty"/>}</section></>;
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`crowd-${session.user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "mahaflow_crowd_readings",
+          filter: `owner_user_id=eq.${session.user.id}`
+        },
+        () => reloadReadings()
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [session.user.id, reloadReadings]);
+
+  const zoneGroups = displayReadings.reduce((groups, item) => {
+    const zone = item.zone || "Unknown zone";
+
+    if (!groups[zone]) {
+      groups[zone] = [];
+    }
+
+    groups[zone].push(item);
+    return groups;
+  }, {});
+
+  const toggleZone = zone => {
+    setExpandedZones(current => ({
+      ...current,
+      [zone]: !current[zone]
+    }));
+  };
+
+  return (
+    <>
+      <SectionHeader
+        eyebrow="AUTHORITY · REALTIME"
+        title="Live monitoring"
+        description="Real detector output and model predictions from your connected YOLO head model."
+        action={
+          <span className="live-dot">
+            <i /> Realtime subscribed
+          </span>
+        }
+      />
+
+      {readings.loading || observations.loading ? (
+        <LoadingState />
+      ) : displayReadings.length ? (
+        <div className="telemetry-grid">
+          {Object.entries(zoneGroups).map(([zone, zoneReadings]) => {
+            const counts = zoneReadings.map(item =>
+              Number(item.people_count || 0)
+            );
+
+            const average = counts.length
+              ? Math.round(
+                  counts.reduce((sum, count) => sum + count, 0) /
+                    counts.length
+                )
+              : 0;
+
+            const maximum = counts.length ? Math.max(...counts) : 0;
+            const minimum = counts.length ? Math.min(...counts) : 0;
+
+            const latest = [...zoneReadings].sort(
+              (a, b) =>
+                new Date(b.recorded_at || b.created_at || 0) -
+                new Date(a.recorded_at || a.created_at || 0)
+            )[0];
+
+            const isExpanded = !!expandedZones[zone];
+
+            return (
+              <article
+                className="telemetry-card telemetry-zone-card"
+                key={zone}
+                data-testid={`authority-zone-${zone}`}
+              >
+                <div>
+                  <Radio />
+                  <StatusBadge value={latest?.crowd_level || "normal"} />
+                </div>
+
+                <strong>{latest?.people_count ?? 0}</strong>
+
+                <span>current people · {zone}</span>
+
+                <dl className="telemetry-summary">
+                  <span>
+                    <dt>Average</dt>
+                    <dd>{average}</dd>
+                  </span>
+
+                  <span>
+                    <dt>Maximum</dt>
+                    <dd>{maximum}</dd>
+                  </span>
+
+                  <span>
+                    <dt>Minimum</dt>
+                    <dd>{minimum}</dd>
+                  </span>
+
+                  <span>
+                    <dt>Readings</dt>
+                    <dd>{zoneReadings.length}</dd>
+                  </span>
+                </dl>
+
+                <small>
+                  {latest?.source || "yolo"}
+                  {latest?.model_version
+                    ? ` · ${latest.model_version}`
+                    : ""}
+                </small>
+
+                <footer>
+                  <span>
+                    {latest?.fps
+                      ? `${latest.fps} FPS`
+                      : "FPS awaiting"}
+                  </span>
+
+                  <span>
+                    {latest?.inference_latency_ms
+                      ? `${latest.inference_latency_ms} ms`
+                      : "Latency awaiting"}
+                  </span>
+                </footer>
+
+                <button
+                  type="button"
+                  className="telemetry-readings-toggle"
+                  onClick={() => toggleZone(zone)}
+                  aria-expanded={isExpanded}
+                >
+                  {isExpanded
+                    ? "Hide readings"
+                    : `See all ${zoneReadings.length} readings`}
+                </button>
+
+                {isExpanded && (
+                  <div className="telemetry-readings-list">
+                    {[...zoneReadings]
+                      .sort(
+                        (a, b) =>
+                          new Date(
+                            b.recorded_at || b.created_at || 0
+                          ) -
+                          new Date(
+                            a.recorded_at || a.created_at || 0
+                          )
+                      )
+                      .map((item, index) => (
+                        <div
+                          className="telemetry-reading-row"
+                          key={item.id || `${zone}-${index}`}
+                        >
+                          <span>
+                            {item.recorded_at
+                              ? formatDateTime12(item.recorded_at)
+                              : "Time unavailable"}
+                          </span>
+
+                          <strong>
+                            {item.people_count ?? 0} people
+                          </strong>
+
+                          <StatusBadge
+                            value={item.crowd_level || "normal"}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState
+          icon={Cpu}
+          title="Awaiting YOLO readings"
+          message="No counts are simulated. Analyze a registered CCTV URL to publish real observations."
+          testId="authority-readings-empty"
+        />
+      )}
+
+      <section className="prediction-section">
+        <h3>Predictions</h3>
+
+        {predictions.data.length ? (
+          <div className="prediction-list">
+            {predictions.data.map(item => (
+              <article
+                key={item.id}
+                data-testid={`authority-prediction-${item.id}`}
+              >
+                <span>
+                  <b>{item.zone}</b>
+                  <small>
+                    {formatDateTime12(item.prediction_for)} ·{" "}
+                    {item.model_version || "model pending"}
+                  </small>
+                </span>
+
+                <strong>{item.predicted_count}</strong>
+
+                <StatusBadge value={item.crowd_level} />
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Activity}
+            title="No predictions received"
+            message="Prediction records will appear when the model service publishes them."
+            testId="authority-predictions-empty"
+          />
+        )}
+      </section>
+    </>
+  );
 };
 
 const Reports = ({ session }) => {
