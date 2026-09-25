@@ -60,11 +60,51 @@ export const WorkspaceUtilities = ({ role, userId, setPage }) => {
     }
   };
 
-  return <div className="workspace-utilities">
+  return <>
+  <div className="workspace-utilities">
     <div className="notification-wrap">
-      <button className={`notification-button ${open ? "selected" : ""}`} onClick={openNotifications} aria-label="Open alerts" data-testid="notifications-button"><Bell size={18}/>{unreadCount > 0 && <b>{unreadCount > 9 ? "9+" : unreadCount}</b>}</button>
-      {open && <div className="notification-panel" data-testid="notifications-panel"><div className="notification-head"><span><b>Alerts</b><small>Verified MahaFlow updates</small></span><button className="icon-button" onClick={() => setOpen(false)} aria-label="Close alerts"><X size={14}/></button></div>{alerts.map(alert => <div className="notification-item" key={alert.id}>{alert.tone === "warning" ? <TriangleAlert size={15}/> : <CheckCircle2 size={15}/>}<span><b>{alert.title}</b><small>{alert.text}</small></span></div>)}</div>}
+      <button className={`notification-button ${open ? "selected" : ""}`} onClick={openNotifications} aria-label="Open alerts" data-testid="notifications-button">
+        <Bell size={18}/>
+        {unreadCount > 0 && <b>{unreadCount > 9 ? "9+" : unreadCount}</b>}
+      </button>
+
+      {open && (
+        <div className="notification-panel" data-testid="notifications-panel">
+          <div className="notification-head">
+            <span>
+              <b>Alerts</b>
+              <small>Verified MahaFlow updates</small>
+            </span>
+            <button className="icon-button" onClick={() => setOpen(false)} aria-label="Close alerts">
+              <X size={14}/>
+            </button>
+          </div>
+
+          {alerts.map(alert => (
+            <div className="notification-item" key={alert.id}>
+              {alert.tone === "warning" ? <TriangleAlert size={15}/> : <CheckCircle2 size={15}/>}
+              <span>
+                <b>{alert.title}</b>
+                <small>{alert.text}</small>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-    {role !== "developer" && <button className="ai-float-button" onClick={() => setPage("MF AI")} aria-label="Open MahaFlow AI" title="Open MahaFlow AI" data-testid="floating-ai-button"><BrainCircuit size={22}/><span>MF AI</span></button>}
-  </div>;
+  </div>
+
+  {role !== "developer" && (
+    <button
+      className="ai-float-button"
+      onClick={() => setPage("MF AI")}
+      aria-label="Open MahaFlow AI"
+      title="Open MahaFlow AI"
+      data-testid="floating-ai-button"
+    >
+      <BrainCircuit size={22}/>
+      <span>MF AI</span>
+    </button>
+  )}
+</>;
 };
