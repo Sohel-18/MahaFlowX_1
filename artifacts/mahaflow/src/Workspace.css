@@ -532,3 +532,39 @@
   align-self: start;
   height: fit-content;
 }
+
+.telemetry-zone-card {
+  position: relative;
+  z-index: 1;
+}
+
+.telemetry-readings-toggle {
+  position: relative;
+  z-index: 102;
+}
+
+.telemetry-readings-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% - 44px);
+  margin-top: 0;
+  z-index: 101;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #edf0f5;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 14px 28px rgba(20, 35, 65, 0.16);
+
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.dark .telemetry-readings-list {
+  background: #0b1730;
+  border-color: #263656;
+}
