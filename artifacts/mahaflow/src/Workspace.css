@@ -558,18 +558,109 @@
 /* Allow the readings overlay to extend over neighboring panels */
 .telemetry-grid {
   position: relative;
+  display: grid;
   align-items: start;
-  overflow: visible;
+  overflow: visible !important;
   z-index: 1;
 }
 
 .telemetry-zone-card {
   position: relative;
-  overflow: visible;
-  z-index: 50;
+  align-self: start;
+  min-width: 0;
+  height: fit-content;
+  overflow: visible !important;
+  z-index: 10;
 }
 
-/* Keep camera form compact */
+/* Keep the readings button above everything */
+.telemetry-readings-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 100;
+}
+
+.telemetry-readings-toggle {
+  position: relative;
+  z-index: 102;
+}
+
+/* Floating readings panel */
+.telemetry-readings-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  width: 100%;
+  max-height: 280px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  padding: 9px;
+  margin: 0;
+
+  background: #fff;
+  border: 1px solid #edf0f5;
+  border-radius: 10px;
+
+  box-shadow: 0 16px 35px rgba(20, 35, 65, 0.20);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  z-index: 9999;
+}
+
+/* Keep status badges visible */
+.telemetry-reading-row {
+  position: relative;
+  z-index: 10000;
+
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 8px 9px;
+
+  background: #f8f9fc;
+  border: 1px solid #edf0f5;
+  border-radius: 6px;
+}
+
+.telemetry-reading-row > span {
+  min-width: 0;
+  font-size: 9px;
+  color: #7d899e;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.35;
+}
+
+.telemetry-reading-row > strong {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.telemetry-reading-row .data-badge {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  font-size: 8px;
+  padding: 4px 7px;
+  white-space: nowrap;
+}
+
+/* Camera form */
 .camera-workspace > .data-form {
   align-self: start;
   height: fit-content;
@@ -593,5 +684,5 @@
 .dark .telemetry-readings-list {
   background: #0b1730;
   border-color: #263656;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.35);
 }
