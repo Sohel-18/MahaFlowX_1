@@ -520,7 +520,7 @@
 /* Individual reading */
 .telemetry-reading-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(120px, 1fr) auto auto;
   align-items: center;
   gap: 10px;
 
@@ -538,9 +538,10 @@
   min-width: 0;
   font-size: 9px;
   color: #7d899e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.35;
 }
 
 .telemetry-reading-row > strong {
@@ -556,12 +557,16 @@
 
 /* Allow the readings overlay to extend over neighboring panels */
 .telemetry-grid {
+  position: relative;
   align-items: start;
   overflow: visible;
+  z-index: 1;
 }
 
 .telemetry-zone-card {
+  position: relative;
   overflow: visible;
+  z-index: 50;
 }
 
 /* Keep camera form compact */
