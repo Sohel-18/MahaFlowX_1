@@ -113,7 +113,7 @@
 .notification-head b{font-size:12px}.notification-head small{font-size:9px;color:#8b96a8}
 .notification-item{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-bottom:1px solid #edf0f5}
 .notification-item:last-child{border-bottom:0}.notification-item svg{color:#e29a2b;flex-shrink:0;margin-top:1px}.notification-item span{flex:1}.notification-item b{font-size:10px}.notification-item small{font-size:9px;line-height:1.5;color:#7d8aa0}
-.ai-float-button{position:fixed;right:28px;bottom:28px;z-index:100;width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,#126ce1,#8838e8);color:#fff;box-shadow:0 16px 30px #3f36a344;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;z-index:7;border:3px solid #fff;transition:transform .2s,box-shadow .2s}
+ .ai-float-button{position:fixed !important;right:28px !important;bottom:28px !important;z-index:99999 !important;width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,#126ce1,#8838e8);color:#fff;box-shadow:0 16px 30px #3f36a344;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;z-index:7;border:3px solid #fff;transition:transform .2s,box-shadow .2s}
 .ai-float-button:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 20px 36px #3f36a355}.ai-float-button span{font-size:8px;font-weight:800;letter-spacing:.5px}
 .mf-ai-page{padding-bottom:90px}.mf-ai-status{display:flex;align-items:center;gap:7px;color:#168361;font-size:10px;font-weight:700}.mf-ai-status i{width:7px;height:7px;border-radius:50%;background:#16ad7c;box-shadow:0 0 0 4px #16ad7c1f}
 .mf-ai-data-note{margin:-10px 0 18px}.mf-ai-data-note .data-state{min-height:90px}.mf-ai-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(340px,.9fr);gap:18px}
@@ -374,3 +374,4 @@
 @media (prefers-reduced-motion:reduce){
   .workspace *, .workspace *::before, .workspace *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
